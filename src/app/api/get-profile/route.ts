@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
-import fs from "fs";
 import { getJWT } from "../../lib/jwtStore";
+import { usersMap } from "../../lib/usersMap";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -13,16 +13,10 @@ export async function GET(req: Request) {
       { error: "JWT expired. Refresh required." },
       { status: 401 }
     );
+  if (!number)
+    return NextResponse.json({ error: "Number required" }, { status: 400 });
 
-  const userFile = fs.readFileSync("users.txt", "utf-8");
-  const lines = userFile.split("\n");
-  let studentId: string | null = null;
-
-  for (const line of lines) {
-    const [num, id] = line.trim().split(":");
-    if (num === number) studentId = id;
-  }
-
+  const studentId = usersMap[number];
   if (!studentId)
     return NextResponse.json({ error: "Student not found" }, { status: 404 });
 
